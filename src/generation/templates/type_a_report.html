@@ -1,0 +1,298 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>דוח נוכחות חודשי</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 12mm 15mm;
+        }
+
+        body {
+            font-family: Arial, "Segoe UI", Tahoma, sans-serif;
+            color: #1a202c;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            line-height: 1.4;
+            font-size: 11pt;
+            direction: rtl;
+        }
+
+        /* כותרת עליונה */
+        .header-container {
+            border-bottom: 2px solid #2b6cb0;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .company-name {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #2b6cb0;
+            margin: 0;
+        }
+
+        .report-badge {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+            border: 1px solid #bee3f8;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11pt;
+            font-weight: bold;
+        }
+
+        .metadata-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 10.5pt;
+            background-color: #f7fafc;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .meta-item {
+            margin-left: 20px;
+        }
+
+        .meta-label {
+            color: #718096;
+            font-weight: bold;
+        }
+
+        /* טבלה דינמית */
+        table.attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+            font-size: 10pt;
+            text-align: center;
+        }
+
+        table.attendance-table th {
+            background-color: #2b6cb0;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 7px 5px;
+            border: 1px solid #2b6cb0;
+        }
+
+        table.attendance-table td {
+            padding: 6px 4px;
+            border: 1px solid #cbd5e0;
+        }
+
+        table.attendance-table tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+
+        table.attendance-table tr.shabbat-row {
+            background-color: #fefcbf;
+            font-weight: 500;
+        }
+
+        .col-total {
+            font-weight: bold;
+            background-color: #edf2f7;
+        }
+
+        /* שורת סיכום בתוך הטבלה - בדיוק כמו במקור */
+        table.attendance-table tfoot tr.table-summary-row {
+            background-color: #e2e8f0;
+            font-weight: bold;
+            border-top: 2px solid #2b6cb0;
+        }
+
+        table.attendance-table tfoot td {
+            padding: 8px 4px;
+            border: 1px solid #cbd5e0;
+            font-size: 10pt;
+        }
+
+        /* אזור תחתון: טבלת סיכום קטנה וקומפקטית */
+        .bottom-section {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 15px;
+            page-break-inside: avoid;
+        }
+
+        .mini-summary-table {
+            border-collapse: collapse;
+            font-size: 9.5pt;
+            width: 220px;
+            border: 1px solid #2d3748;
+            text-align: center;
+        }
+
+        .mini-summary-table th {
+            background-color: #f7fafc;
+            border: 1px solid #718096;
+            padding: 4px 8px;
+            text-align: right;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .mini-summary-table td {
+            border: 1px solid #718096;
+            padding: 4px 8px;
+            font-weight: bold;
+            background-color: #ffffff;
+            color: #2b6cb0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- כותרת עליונה -->
+    <div class="header-container">
+        <div class="header-top">
+            <h1 class="company-name">{{ report.company_name or 'נ.ע. הנשר כח אדם בע"מ' }}</h1>
+            <span class="report-badge">דוח נוכחות חודשי - סוג A</span>
+        </div>
+        <div class="metadata-grid">
+            <div class="meta-item">
+                <span class="meta-label">חודש דוח:</span>
+                <span>{{ report.report_month.strftime('%m/%Y') if report.report_month else '10/2022' }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">שם עובד:</span>
+                <span>{{ report.employee_name or 'עובד כללי' }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">מזהה עובד:</span>
+                <span>{{ report.employee_id or '---' }}</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">ימי עבודה:</span>
+                <span>{{ report.total_work_days or report.rows|length }}</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- טבלת שורות נוכחות דינמית -->
+    <table class="attendance-table">
+        <thead>
+            <tr>
+                <th style="width: 13%;">תאריך</th>
+                <th style="width: 10%;">יום</th>
+                <th style="width: 12%;">מקום</th>
+                <th style="width: 8%;">כניסה</th>
+                <th style="width: 8%;">יציאה</th>
+                <th style="width: 7%;">הפסקה</th>
+                <th style="width: 8%;">סה"כ</th>
+                <th style="width: 8%;">100%</th>
+                <th style="width: 8%;">125%</th>
+                <th style="width: 9%;">150%</th>
+                <th style="width: 9%;">שבת</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in report.rows %}
+            <tr class="{% if row.day_of_week == 'שבת' %}shabbat-row{% endif %}">
+                <td>{{ row.date.strftime('%d/%m/%Y') if row.date else '---' }}</td>
+                <td>{{ row.day_of_week or '---' }}</td>
+                <td>{{ row.location or 'גליליון' }}</td>
+                <td>{{ row.entry_time.strftime('%H:%M') if row.entry_time else '--:--' }}</td>
+                <td>{{ row.exit_time.strftime('%H:%M') if row.exit_time else '--:--' }}</td>
+                <td>
+                    {% if row.break_time %}
+                        {% if row.break_time.seconds is defined %}
+                            {{ "%02d:%02d"|format(row.break_time.seconds // 3600, (row.break_time.seconds % 3600) // 60) }}
+                        {% else %}
+                            {{ row.break_time.strftime('%H:%M') }}
+                        {% endif %}
+                    {% else %}
+                        00:00
+                    {% endif %}
+                </td>
+                <td class="col-total">{{ "%.2f"|format(row.total_hours) }}</td>
+                <td>{{ "%.2f"|format(row.hours_100) }}</td>
+                <td>{{ "%.2f"|format(row.hours_125) }}</td>
+                <td>{{ "%.2f"|format(row.hours_150) }}</td>
+                <td class="{% if row.shabbat_hours and row.shabbat_hours > 0 %}bold{% endif %}">{{ "%.2f"|format(row.shabbat_hours or 0.0) }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+        <tfoot>
+            <tr class="table-summary-row">
+                <td colspan="3" style="text-align: right; padding-right: 10px; font-weight: bold;">
+                    סה"כ ({{ report.total_work_days or report.rows|length }} ימים)
+                </td>
+                <td>--</td>
+                <td>--</td>
+                <td>
+                    {# חישוב סך שעות הפסקה #}
+                    {% set total_break_secs = namespace(val=0) %}
+                    {% for r in report.rows %}
+                        {% if r.break_time and r.break_time.seconds is defined %}
+                            {% set total_break_secs.val = total_break_secs.val + r.break_time.seconds %}
+                        {% elif r.break_time and r.break_time.minute is defined %}
+                            {% set total_break_secs.val = total_break_secs.val + (r.break_time.hour * 3600 + r.break_time.minute * 60) %}
+                        {% endif %}
+                    {% endfor %}
+                    {{ "%02d:%02d"|format(total_break_secs.val // 3600, (total_break_secs.val % 3600) // 60) }}
+                </td>
+                <td class="col-total">{{ "%.2f"|format(report.total_hours) }}</td>
+                <td>{{ "%.2f"|format(report.total_hours_100) }}</td>
+                <td>{{ "%.2f"|format(report.total_hours_125) }}</td>
+                <td>{{ "%.2f"|format(report.total_hours_150) }}</td>
+                <td class="{% if report.total_shabbat_hours and report.total_shabbat_hours > 0 %}bold{% endif %}">
+                    {{ "%.2f"|format(report.total_shabbat_hours or 0.0) }}
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- אזור תחתון: טבלת סיכום קומפקטית לצד חתימות בדיוק כמו במקור -->
+    <div class="bottom-section">
+        <!-- טבלת סיכום קטנה בפינה כמו במקור -->
+        <table class="mini-summary-table">
+            <tr>
+                <th>ימים</th>
+                <td>{{ report.total_work_days or report.rows|length }}</td>
+            </tr>
+            <tr>
+                <th>סה"כ שעות</th>
+                <td>{{ "%.2f"|format(report.total_hours) }}</td>
+            </tr>
+            <tr>
+                <th>שעות 100%</th>
+                <td>{{ "%.2f"|format(report.total_hours_100) }}</td>
+            </tr>
+            <tr>
+                <th>שעות 125%</th>
+                <td>{{ "%.2f"|format(report.total_hours_125) }}</td>
+            </tr>
+            <tr>
+                <th>שעות 150%</th>
+                <td>{{ "%.2f"|format(report.total_hours_150) }}</td>
+            </tr>
+            <tr>
+                <th>שבת 150%</th>
+                <td>{{ "%.2f"|format(report.total_shabbat_hours or 0.0) }}</td>
+            </tr>
+            <tr>
+                <th>נסיעות</th>
+                <td>{{ "%.2f"|format(report.travel_expenses or 0.0) }}</td>
+            </tr>
+            <tr>
+                <th>בונוס</th>
+                <td>{{ "%.2f"|format(report.bonus or 0.0) }}</td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+</html>

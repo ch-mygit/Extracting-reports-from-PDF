@@ -1,0 +1,213 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>כרטיס עובד לחודש</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm 20mm;
+        }
+
+        body {
+            font-family: Arial, "Segoe UI", Tahoma, sans-serif;
+            color: #000000;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            line-height: 1.25;
+            font-size: 11pt;
+            direction: rtl;
+        }
+
+       
+        .report-wrapper {
+            width: 520px;
+            margin: 0 auto;
+        }
+
+
+        .top-section {
+            width: 320px;
+            margin: 0 auto 12px auto;
+        }
+
+        .employee-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11pt;
+            margin-bottom: 0px;
+        }
+
+        .employee-table td {
+            border: 1.5px solid #000000;
+            padding: 3px 8px;
+            font-weight: bold;
+        }
+
+        .employee-table .label-cell {
+            background-color: #ffffff;
+            text-align: right;
+            width: 40%;
+            border-left: none;
+        }
+
+        .employee-table .name-cell {
+            background-color: #ffffff;
+            text-align: center;
+            width: 60%;
+            border-right: none;
+        }
+
+   
+        .summary-top-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11pt;
+            margin-top: -1.5px;
+        }
+
+        .summary-top-table td {
+            border: 1.5px solid #000000;
+            padding: 3px 8px;
+            font-weight: bold;
+        }
+
+        .summary-top-table td.label-col {
+            text-align: right;
+            width: 58%;
+            background-color: #ffffff;
+        }
+
+        .summary-top-table td.value-col {
+            text-align: center;
+            width: 42%;
+            background-color: #ffffff;
+        }
+
+        .banner-month {
+            width: 100%;
+            background-color: #bfbfbf;
+            border: 1.5px solid #000000;
+            font-size: 12pt;
+            font-weight: bold;
+            text-align: center;
+            padding: 4px 0;
+            box-sizing: border-box;
+            letter-spacing: 0.5px;
+        }
+
+    
+        table.type-b-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 11pt;
+            margin-top: -1.5px;
+        }
+
+        table.type-b-table th {
+            border: 1.5px solid #000000;
+            padding: 4px 2px;
+            font-weight: bold;
+            background-color: #ffffff;
+            line-height: 1.15;
+            vertical-align: middle;
+        }
+
+        table.type-b-table td {
+            border: 1.5px solid #000000;
+            padding: 4px 2px;
+            height: 22px;
+            vertical-align: middle;
+        }
+
+        table.type-b-table tr.shabbat-row {
+            background-color: #bfbfbf;
+            font-weight: bold;
+        }
+
+        table.type-b-table tr.holiday-row {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="report-wrapper">
+
+  
+    <div class="top-section">
+        <table class="employee-table">
+            <tr>
+                <td class="label-cell">שם העובד:</td>
+                <td class="name-cell">{{ report.employee_name or 'עובד כללי' }}</td>
+            </tr>
+        </table>
+
+      
+        <table class="summary-top-table">
+            <tr>
+                <td class="label-col">סה"כ ימי עבודה לחודש</td>
+                <td class="value-col">{{ report.total_work_days or report.rows|length }}</td>
+            </tr>
+            <tr>
+                <td class="label-col">סה"כ שעות חודשיות</td>
+                <td class="value-col">{{ "%.2f"|format(report.total_hours) }}</td>
+            </tr>
+            <tr>
+                <td class="label-col">מחיר לשעה</td>
+                <td class="value-col">₪ {{ "%.2f"|format(report.hourly_rate or 30.65) }}</td>
+            </tr>
+            <tr>
+                <td class="label-col">סה"כ לתשלום</td>
+                <td class="value-col">₪ {{ "{:,.2f}".format(report.total_payment or (report.total_hours * (report.hourly_rate or 30.65))) }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="banner-month">
+        כרטיס עובד לחודש: {{ month_hebrew_str or 'ספט-22' }}
+    </div>
+
+    
+    <table class="type-b-table">
+        <thead>
+            <tr>
+                <th style="width: 17%;">תאריך</th>
+                <th style="width: 15%;">יום<br>בשבוע</th>
+                <th style="width: 16%;">שעת<br>כניסה</th>
+                <th style="width: 16%;">שעת יציאה</th>
+                <th style="width: 16%;">סה"כ<br>שעות</th>
+                <th style="width: 20%;">הערות</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in report.rows %}
+            {% if row.day_of_week == 'שבת' %}
+            <tr class="shabbat-row">
+                <td>{{ row.date.day }}/{{ row.date.month }}/{{ (row.date.year|string)[2:] if row.date else '' }}</td>
+                <td>שבת</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            {% else %}
+            <tr class="{% if row.notes and row.notes != 'רגיל' %}holiday-row{% endif %}">
+                <td>{{ row.date.day }}/{{ row.date.month }}/{{ (row.date.year|string)[2:] if row.date else '' }}</td>
+                <td>{{ row.day_of_week or '' }}</td>
+                <td>{{ row.entry_time.strftime('%H:%M') if row.entry_time else '' }}</td>
+                <td>{{ row.exit_time.strftime('%H:%M') if row.exit_time else '' }}</td>
+                <td>{{ "%.2f"|format(row.total_hours) if row.total_hours and row.total_hours > 0 else '' }}</td>
+                <td>{{ row.notes if row.notes and row.notes != 'רגיל' else '' }}</td>
+            </tr>
+            {% endif %}
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

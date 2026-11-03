@@ -1,0 +1,900 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>דוח נוכחות חודשי</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 12mm 15mm;
+        }
+
+        body {
+            font-family: Arial, "Segoe UI", Tahoma, sans-serif;
+            color: #1a202c;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            line-height: 1.4;
+            font-size: 11pt;
+            direction: rtl;
+        }
+
+        /* כותרת עליונה */
+        .header-container {
+            border-bottom: 2px solid #2b6cb0;
+            padding-bottom: 12px;
+            margin-bottom: 16px;
+        }
+
+        .header-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .company-name {
+            font-size: 20pt;
+            font-weight: bold;
+            color: #2b6cb0;
+            margin: 0;
+        }
+
+        .report-badge {
+            background-color: #ebf8ff;
+            color: #2b6cb0;
+            border: 1px solid #bee3f8;
+            padding: 4px 12px;
+            border-radius: 4px;
+            font-size: 11pt;
+            font-weight: bold;
+        }
+
+        .metadata-grid {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            font-size: 10.5pt;
+            background-color: #f7fafc;
+            padding: 8px 12px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .meta-item {
+            margin-left: 20px;
+        }
+
+        .meta-label {
+            color: #718096;
+            font-weight: bold;
+        }
+
+        /* טבלה דינמית */
+        table.attendance-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-bottom: 18px;
+            font-size: 10pt;
+            text-align: center;
+        }
+
+        table.attendance-table th {
+            background-color: #2b6cb0;
+            color: #ffffff;
+            font-weight: bold;
+            padding: 7px 5px;
+            border: 1px solid #2b6cb0;
+        }
+
+        table.attendance-table td {
+            padding: 6px 4px;
+            border: 1px solid #cbd5e0;
+        }
+
+        table.attendance-table tr:nth-child(even) {
+            background-color: #f7fafc;
+        }
+
+        table.attendance-table tr.shabbat-row {
+            background-color: #fefcbf;
+            font-weight: 500;
+        }
+
+        .col-total {
+            font-weight: bold;
+            background-color: #edf2f7;
+        }
+
+        /* שורת סיכום בתוך הטבלה - בדיוק כמו במקור */
+        table.attendance-table tfoot tr.table-summary-row {
+            background-color: #e2e8f0;
+            font-weight: bold;
+            border-top: 2px solid #2b6cb0;
+        }
+
+        table.attendance-table tfoot td {
+            padding: 8px 4px;
+            border: 1px solid #cbd5e0;
+            font-size: 10pt;
+        }
+
+        /* אזור תחתון: טבלת סיכום קטנה וקומפקטית */
+        .bottom-section {
+            display: flex;
+            justify-content: flex-start;
+            margin-top: 15px;
+            page-break-inside: avoid;
+        }
+
+        .mini-summary-table {
+            border-collapse: collapse;
+            font-size: 9.5pt;
+            width: 220px;
+            border: 1px solid #2d3748;
+            text-align: center;
+        }
+
+        .mini-summary-table th {
+            background-color: #f7fafc;
+            border: 1px solid #718096;
+            padding: 4px 8px;
+            text-align: right;
+            font-weight: bold;
+            color: #2d3748;
+        }
+
+        .mini-summary-table td {
+            border: 1px solid #718096;
+            padding: 4px 8px;
+            font-weight: bold;
+            background-color: #ffffff;
+            color: #2b6cb0;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- כותרת עליונה -->
+    <div class="header-container">
+        <div class="header-top">
+            <h1 class="company-name">נ.ע. הנשר כח אדם בע&#34;מ</h1>
+            <span class="report-badge">דוח נוכחות חודשי - סוג A</span>
+        </div>
+        <div class="metadata-grid">
+            <div class="meta-item">
+                <span class="meta-label">חודש דוח:</span>
+                <span>01/2023</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">שם עובד:</span>
+                <span>ישראל ישראלי</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">מזהה עובד:</span>
+                <span>123456789</span>
+            </div>
+            <div class="meta-item">
+                <span class="meta-label">ימי עבודה:</span>
+                <span>23</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- טבלת שורות נוכחות דינמית -->
+    <table class="attendance-table">
+        <thead>
+            <tr>
+                <th style="width: 13%;">תאריך</th>
+                <th style="width: 10%;">יום</th>
+                <th style="width: 12%;">מקום</th>
+                <th style="width: 8%;">כניסה</th>
+                <th style="width: 8%;">יציאה</th>
+                <th style="width: 7%;">הפסקה</th>
+                <th style="width: 8%;">סה"כ</th>
+                <th style="width: 8%;">100%</th>
+                <th style="width: 8%;">125%</th>
+                <th style="width: 9%;">150%</th>
+                <th style="width: 9%;">שבת</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            <tr class="">
+                <td>01/01/2023</td>
+                <td>ראשון</td>
+                <td>גליליון</td>
+                <td>07:15</td>
+                <td>16:45</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">9.00</td>
+                <td>8.00</td>
+                <td>1.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>02/01/2023</td>
+                <td>שני</td>
+                <td>גליליון</td>
+                <td>08:00</td>
+                <td>16:30</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.00</td>
+                <td>8.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>03/01/2023</td>
+                <td>שלישי</td>
+                <td>גליליון</td>
+                <td>08:30</td>
+                <td>17:30</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.50</td>
+                <td>8.00</td>
+                <td>0.50</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>04/01/2023</td>
+                <td>רביעי</td>
+                <td>גליליון</td>
+                <td>07:30</td>
+                <td>16:00</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.00</td>
+                <td>8.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>05/01/2023</td>
+                <td>חמישי</td>
+                <td>גליליון</td>
+                <td>07:30</td>
+                <td>16:00</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.00</td>
+                <td>8.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>06/01/2023</td>
+                <td>שישי</td>
+                <td>גליליון</td>
+                <td>--:--</td>
+                <td>--:--</td>
+                <td>
+                    
+                        00:00
+                    
+                </td>
+                <td class="col-total">0.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>08/01/2023</td>
+                <td>ראשון</td>
+                <td>גליליון</td>
+                <td>08:00</td>
+                <td>17:00</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.50</td>
+                <td>8.00</td>
+                <td>0.50</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>09/01/2023</td>
+                <td>שני</td>
+                <td>גליליון</td>
+                <td>07:00</td>
+                <td>15:30</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.00</td>
+                <td>8.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>10/01/2023</td>
+                <td>שלישי</td>
+                <td>גליליון</td>
+                <td>07:30</td>
+                <td>17:00</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">9.00</td>
+                <td>8.00</td>
+                <td>1.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>11/01/2023</td>
+                <td>רביעי</td>
+                <td>גליליון</td>
+                <td>07:30</td>
+                <td>17:30</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">9.50</td>
+                <td>8.00</td>
+                <td>1.50</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>12/01/2023</td>
+                <td>חמישי</td>
+                <td>גליליון</td>
+                <td>07:15</td>
+                <td>17:15</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">9.50</td>
+                <td>8.00</td>
+                <td>1.50</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>13/01/2023</td>
+                <td>שישי</td>
+                <td>גליליון</td>
+                <td>--:--</td>
+                <td>--:--</td>
+                <td>
+                    
+                        00:00
+                    
+                </td>
+                <td class="col-total">0.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>15/01/2023</td>
+                <td>ראשון</td>
+                <td>גליליון</td>
+                <td>07:30</td>
+                <td>16:30</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.50</td>
+                <td>8.00</td>
+                <td>0.50</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>16/01/2023</td>
+                <td>שני</td>
+                <td>גליליון</td>
+                <td>08:00</td>
+                <td>17:00</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.50</td>
+                <td>8.00</td>
+                <td>0.50</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>17/01/2023</td>
+                <td>שלישי</td>
+                <td>גליליון</td>
+                <td>07:30</td>
+                <td>17:30</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">9.50</td>
+                <td>8.00</td>
+                <td>1.50</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>18/01/2023</td>
+                <td>רביעי</td>
+                <td>גליליון</td>
+                <td>07:15</td>
+                <td>16:45</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">9.00</td>
+                <td>8.00</td>
+                <td>1.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>19/01/2023</td>
+                <td>חמישי</td>
+                <td>גליליון</td>
+                <td>07:00</td>
+                <td>16:00</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.50</td>
+                <td>8.00</td>
+                <td>0.50</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>20/01/2023</td>
+                <td>שישי</td>
+                <td>גליליון</td>
+                <td>--:--</td>
+                <td>--:--</td>
+                <td>
+                    
+                        00:00
+                    
+                </td>
+                <td class="col-total">0.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>22/01/2023</td>
+                <td>ראשון</td>
+                <td>גליליון</td>
+                <td>08:30</td>
+                <td>17:30</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.50</td>
+                <td>8.00</td>
+                <td>0.50</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>23/01/2023</td>
+                <td>שני</td>
+                <td>גליליון</td>
+                <td>07:30</td>
+                <td>16:00</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.00</td>
+                <td>8.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>24/01/2023</td>
+                <td>שלישי</td>
+                <td>גליליון</td>
+                <td>07:00</td>
+                <td>15:30</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.00</td>
+                <td>8.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>25/01/2023</td>
+                <td>רביעי</td>
+                <td>גליליון</td>
+                <td>08:15</td>
+                <td>16:45</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.00</td>
+                <td>8.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>26/01/2023</td>
+                <td>חמישי</td>
+                <td>גליליון</td>
+                <td>08:00</td>
+                <td>17:30</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">9.00</td>
+                <td>8.00</td>
+                <td>1.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>27/01/2023</td>
+                <td>שישי</td>
+                <td>גליליון</td>
+                <td>--:--</td>
+                <td>--:--</td>
+                <td>
+                    
+                        00:00
+                    
+                </td>
+                <td class="col-total">0.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>29/01/2023</td>
+                <td>ראשון</td>
+                <td>גליליון</td>
+                <td>08:15</td>
+                <td>18:15</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">9.50</td>
+                <td>8.00</td>
+                <td>1.50</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>30/01/2023</td>
+                <td>שני</td>
+                <td>גליליון</td>
+                <td>08:00</td>
+                <td>16:30</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.00</td>
+                <td>8.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+            <tr class="">
+                <td>31/01/2023</td>
+                <td>שלישי</td>
+                <td>גליליון</td>
+                <td>08:00</td>
+                <td>16:30</td>
+                <td>
+                    
+                        
+                            00:30
+                        
+                    
+                </td>
+                <td class="col-total">8.00</td>
+                <td>8.00</td>
+                <td>0.00</td>
+                <td>0.00</td>
+                <td class="">0.00</td>
+            </tr>
+            
+        </tbody>
+        <tfoot>
+            <tr class="table-summary-row">
+                <td colspan="3" style="text-align: right; padding-right: 10px; font-weight: bold;">
+                    סה"כ (23 ימים)
+                </td>
+                <td>--</td>
+                <td>--</td>
+                <td>
+                    
+                    
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                        
+                            
+                        
+                    
+                    11:30
+                </td>
+                <td class="col-total">197.00</td>
+                <td>184.00</td>
+                <td>13.00</td>
+                <td>0.00</td>
+                <td class="">
+                    0.00
+                </td>
+            </tr>
+        </tfoot>
+    </table>
+
+    <!-- אזור תחתון: טבלת סיכום קומפקטית לצד חתימות בדיוק כמו במקור -->
+    <div class="bottom-section">
+        <!-- טבלת סיכום קטנה בפינה כמו במקור -->
+        <table class="mini-summary-table">
+            <tr>
+                <th>ימים</th>
+                <td>23</td>
+            </tr>
+            <tr>
+                <th>סה"כ שעות</th>
+                <td>197.00</td>
+            </tr>
+            <tr>
+                <th>שעות 100%</th>
+                <td>184.00</td>
+            </tr>
+            <tr>
+                <th>שעות 125%</th>
+                <td>13.00</td>
+            </tr>
+            <tr>
+                <th>שעות 150%</th>
+                <td>0.00</td>
+            </tr>
+            <tr>
+                <th>שבת 150%</th>
+                <td>0.00</td>
+            </tr>
+            <tr>
+                <th>נסיעות</th>
+                <td>120.00</td>
+            </tr>
+            <tr>
+                <th>בונוס</th>
+                <td>150.00</td>
+            </tr>
+        </table>
+    </div>
+
+</body>
+</html>
