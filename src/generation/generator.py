@@ -14,6 +14,21 @@ class SyntheticReportGenerator:
     ללא תלות בקובץ סריקה קיים או בשלבי OCR.
     """
 
+    HOLIDAYS_BY_MONTH_DAYS = {
+        1: {1: "חנוכה", 15: "חופשה"},
+        2: {20: "תענית אסתר", 21: "פורים"},
+        3: {14: "פורים", 15: "שושן פורים"},
+        4: {14: "ערב פסח", 15: "פסח", 16: "חול המועד פסח", 21: "שביעי של פסח"},
+        5: {4: "יום העצמאות", 18: "ל״ג בעומר", 25: "שבועות"},
+        6: {5: "שבועות", 6: "אסרו חג"},
+        7: {17: "צום י״ז בתמוז"},
+        8: {9: "צום תשעה באב"},
+        9: {25: "ערב ראש השנה", 26: "ראש השנה", 27: "ראש השנה"},
+        10: {4: "ערב יום כיפור", 5: "יום כיפור", 9: "ערב סוכות", 10: "סוכות", 17: "שמחת תורה"},
+        11: {28: "חנוכה"},
+        12: {18: "חנוכה", 19: "חנוכה", 25: "חנוכה"},
+    }
+
     HEBREW_DAYS = ["שני", "שלישי", "רביעי", "חמישי", "שישי", "שבת", "ראשון"]
 
     @staticmethod
@@ -71,8 +86,12 @@ class SyntheticReportGenerator:
             is_shabbat = (day_name == "שבת")
             is_friday = (day_name == "שישי")
 
-            # הגבלה על כמות ימי עבודה אם הוגדרה במפורש
-            if work_days_count is not None and actual_work_days >= work_days_count and not is_shabbat:
+            # בדיקת ימי חג (אינם נספרים כימי עבודה רגילים)
+            month_holidays = self.HOLIDAYS_BY_MONTH_DAYS.get(month, {15: "חג"})
+            is_holiday = (day in month_holidays)
+
+            # הגבלה על כמות ימי עבודה אם הוגדרה במפורש (שבתות וחגים אינם נגרעים מימי עבודה)
+            if work_days_count is not None and actual_work_days >= work_days_count and not is_shabbat and not is_holiday:
                 # יום חופש/מנוחה
                 continue
 
@@ -97,35 +116,50 @@ class SyntheticReportGenerator:
                         )
                     )
                 else:
-                    # יום עבודה רגיל
-                    entry_h = random.choice([7, 8])
-                    entry_m = random.choice([0, 15, 30, 45])
-                    entry = time(entry_h, entry_m)
-
-                    duration_hours = random.choice([7.0, 7.5, 8.0, 8.5, 9.0])
-                    exit_minutes_total = entry_h * 60 + entry_m + int(duration_hours * 60)
-                    exit_h = (exit_minutes_total // 60) % 24
-                    exit_m = exit_minutes_total % 60
-                    exit_t = time(exit_h, exit_m)
-
-                    day_hours = round(duration_hours, 2)
-                    rows.append(
-                        AttendanceRow(
-                            date=cur_date,
-                            day_of_week=day_name,
-                            entry_time=entry,
-                            exit_time=exit_t,
-                            total_hours=day_hours,
-                            notes="רגיל",
+                    # בדיקה האם יום זה מוגדר כחג (שורת חג ריקה עם הערה)
+                    month_holidays = self.HOLIDAYS_BY_MONTH_DAYS.get(month, {15: "חג"})
+                    if day in month_holidays:
+                        rows.append(
+                            AttendanceRow(
+                                date=cur_date,
+                                day_of_week=day_name,
+                                entry_time=None,
+                                exit_time=None,
+                                total_hours=0.0,
+                                hours_100=0.0,
+                                notes=month_holidays[day],
+                            )
                         )
-                    )
-                    total_hours += day_hours
-                    actual_work_days += 1
+                    else:
+                        # יום עבודה רגיל
+                        entry_h = random.choice([7, 8])
+                        entry_m = random.choice([0, 15, 30, 45])
+                        entry = time(entry_h, entry_m)
+
+                        duration_hours = random.choice([7.0, 7.5, 8.0, 8.5, 9.0])
+                        exit_minutes_total = entry_h * 60 + entry_m + int(duration_hours * 60)
+                        exit_h = (exit_minutes_total // 60) % 24
+                        exit_m = exit_minutes_total % 60
+                        exit_t = time(exit_h, exit_m)
+
+                        day_hours = round(duration_hours, 2)
+                        rows.append(
+                            AttendanceRow(
+                                date=cur_date,
+                                day_of_week=day_name,
+                                entry_time=entry,
+                                exit_time=exit_t,
+                                total_hours=day_hours,
+                                notes="רגיל",
+                            )
+                        )
+                        total_hours += day_hours
+                        actual_work_days += 1
 
             else:
                 # פורמט A
                 if is_shabbat:
-                    # בסוג A: לעיתים עובדים שבת עם תעריף 150%
+                    # בסוג A: לעיתים עובדים שבת (שעות שבת נספרות בנפרד מעמודת 150%)
                     work_on_shabbat = (random.random() < 0.25)  # 25% סיכוי למשמרת שבת
                     if work_on_shabbat:
                         entry = time(8, 0)
@@ -142,14 +176,13 @@ class SyntheticReportGenerator:
                                 break_time=break_t,
                                 hours_100=0.0,
                                 hours_125=0.0,
-                                hours_150=shabbat_hrs,
+                                hours_150=0.0,
                                 shabbat_hours=shabbat_hrs,
                                 total_hours=shabbat_hrs,
                                 notes="עבודה בשבת",
                             )
                         )
                         total_hours += shabbat_hrs
-                        total_hours_150 += shabbat_hrs
                         total_shabbat += shabbat_hrs
                         actual_work_days += 1
                 elif is_friday:
@@ -163,12 +196,12 @@ class SyntheticReportGenerator:
                         )
                     )
                 else:
-                    # יום רגיל בסוג A
+                    # יום רגיל בסוג A (כולל משמרות רגילות ומשמרות עם שעות 150%)
                     entry_h = random.choice([7, 8])
                     entry_m = random.choice([0, 15, 30])
                     entry = time(entry_h, entry_m)
 
-                    work_duration = random.choice([8.5, 9.0, 9.5, 10.0])
+                    work_duration = random.choice([8.5, 9.0, 9.5, 10.0, 11.0, 12.0])
                     exit_minutes_total = entry_h * 60 + entry_m + int(work_duration * 60)
                     exit_t = time((exit_minutes_total // 60) % 24, exit_minutes_total % 60)
                     break_t = timedelta(minutes=30)

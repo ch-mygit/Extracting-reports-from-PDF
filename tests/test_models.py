@@ -73,30 +73,68 @@ def test_attendance_report_creation():
         entry_time=time(8, 0),
         exit_time=time(15, 0),
         break_time=timedelta(minutes=30),
-        hours_150=6.5,
+        hours_100=0.0,
+        hours_125=0.0,
+        hours_150=0.0,
         shabbat_hours=6.5,
         total_hours=6.5,
     )
+    # שורה עם שעות 150% ביום חול (מעל 10 שעות)
+    row3 = AttendanceRow(
+        date=date(2022, 10, 9),
+        day_of_week="ראשון",
+        entry_time=time(8, 0),
+        exit_time=time(21, 30),
+        break_time=timedelta(minutes=30),
+        hours_100=8.0,
+        hours_125=2.0,
+        hours_150=3.0,
+        shabbat_hours=0.0,
+        total_hours=13.0,
+    )
+    # שורה עם 3 שעות שבת
+    row4 = AttendanceRow(
+        date=date(2022, 10, 15),
+        day_of_week="שבת",
+        entry_time=time(8, 0),
+        exit_time=time(11, 0),
+        break_time=timedelta(minutes=0),
+        hours_100=0.0,
+        hours_125=0.0,
+        hours_150=0.0,
+        shabbat_hours=3.0,
+        total_hours=3.0,
+    )
+
+    # בדיקת הפרדה: 3 שעות 150% ו-3 שעות שבת יחד הן 6 בסה"כ
+    assert row3.hours_150 == 3.0
+    assert row3.shabbat_hours == 0.0
+    assert row4.hours_150 == 0.0
+    assert row4.shabbat_hours == 3.0
+    assert (row3.hours_150 + row4.shabbat_hours) == 6.0
 
     report = AttendanceReport(
         employee_name="ישראל ישראלי",
         employee_id="123456789",
         company_name='נ.ע. הנשר כח אדם בע"מ',
         report_month=date(2022, 10, 1),
-        rows=[row1, row2],
-        total_hours=13.0,
-        total_hours_100=6.5,
-        total_hours_150=6.5,
-        total_shabbat_hours=6.5,
-        total_work_days=2,
+        rows=[row1, row2, row3, row4],
+        total_hours=35.5,
+        total_hours_100=14.5,
+        total_hours_125=2.0,
+        total_hours_150=3.0,
+        total_shabbat_hours=9.5,
+        total_work_days=4,
         travel_expenses=50.0,
         bonus=100.0,
     )
 
     # 1. בדיקת שדות
     assert report.employee_name == "ישראל ישראלי"
-    assert len(report.rows) == 2
-    assert report.total_hours == 13.0
+    assert len(report.rows) == 4
+    assert report.total_hours == 35.5
+    assert report.total_hours_150 == 3.0
+    assert report.total_shabbat_hours == 9.5
     assert report.travel_expenses == 50.0
     assert report.bonus == 100.0
 

@@ -30,11 +30,11 @@ class BaseParser(ABC):
         """
         מנקה שיבושי OCR נפוצים:
         - הסרת תווי כיווניות בלתי נראים (Unicode BiDi marks)
-        - תיקון מפרידי שעות שבורים (08.30 או 08;30 -> 08:30)
+        - תיקון מפרידי שעות שבורים עם נקודה-פסיק (08;30 -> 08:30)
         - הסרת תווים מזהמים וקווים כפולים
         """
         cleaned = re.sub(r"[\u200e\u200f\u202a-\u202e\u2066-\u2069]", "", text)
-        cleaned = re.sub(r"\b(\d{1,2})[.;](\d{2})\b", r"\1:\2", cleaned)
+        cleaned = re.sub(r"\b(\d{1,2});(\d{2})\b", r"\1:\2", cleaned)
         cleaned = re.sub(r"(\d)\|(\d)", r"\1 | \2", cleaned)
         return cleaned
 
@@ -207,6 +207,15 @@ class TypeAParser(BaseParser):
         found_dates: List[date] = []
 
         for line in lines:
+            # בדיקה האם זו שורת סיכומים תחתונה (מונע פרסור שגוי שלה כשורה רגילה)
+            is_totals_line = any(keyword in line for keyword in ["סה\"כ שעות", "סה\"כ", "סה״כ", "ימים"]) or (
+                re.search(r"\b\d{2,3}\.00\b", line) and not re.search(r"\b\d{1,2}[/.-]\d{1,2}[/.-]\d{2,4}\b", line)
+            )
+
+            if is_totals_line:
+                self._extract_totals(line, report)
+                continue
+
             time_matches = re.findall(r"\b\d{1,2}:\d{2}\b", line)
 
             if len(time_matches) >= 2:
@@ -215,9 +224,6 @@ class TypeAParser(BaseParser):
                     report.rows.append(row)
                     if row.date:
                         found_dates.append(row.date)
-
-            elif any(keyword in line for keyword in ["סה\"כ שעות", "סה\"כ", "ימים"]) or re.search(r"\b\d{2,3}\.00\b", line):
-                self._extract_totals(line, report)
 
             if "נסיעות" in line:
                 m = re.search(r"(\d+(?:\.\d{2})?)", line)
@@ -243,6 +249,14 @@ class TypeAParser(BaseParser):
             report.report_month = date(2022, 10, 1)
 
         self.reconstruct_missing_dates_and_days(report.rows, year, month)
+
+        # עדכון שורות שבת שזוהו בדיעבד על פי לוח השנה
+        for r in report.rows:
+            if r.day_of_week == "שבת" and (r.shabbat_hours is None or r.shabbat_hours == 0.0) and r.total_hours > 0.0:
+                r.shabbat_hours = r.total_hours
+                r.hours_100 = 0.0
+                r.hours_125 = 0.0
+                r.hours_150 = 0.0
 
         if report.total_hours == 0.0 and report.rows:
             report.total_hours = round(sum(r.total_hours for r in report.rows), 2)
@@ -284,8 +298,15 @@ class TypeAParser(BaseParser):
             row.total_hours = self.calculate_net_hours(row.entry_time, row.exit_time, row.break_time)
             if row.day_of_week == "שבת":
                 row.shabbat_hours = row.total_hours
+                row.hours_100 = 0.0
+                row.hours_125 = 0.0
+                row.hours_150 = 0.0
             else:
-                row.hours_100 = row.total_hours
+                row.shabbat_hours = 0.0
+                row.hours_100 = min(row.total_hours, 8.0)
+                rem = max(0.0, row.total_hours - 8.0)
+                row.hours_125 = min(rem, 2.0)
+                row.hours_150 = max(0.0, rem - 2.0)
 
         return row
 
@@ -322,7 +343,16 @@ class TypeBParser(BaseParser):
         "יול": 7, "אוג": 8, "ספט": 9, "אוק": 10, "נוב": 11, "דצמ": 12
     }
 
-    KNOWN_NOTES = ["ערב ראש השנה", "ראש השנה", "יום כיפור", "סוכות", "שמחת תורה", "פסח", "חג", "חופשה", "מחלה", "מילואים"]
+    KNOWN_NOTES = [
+        "ערב ראש השנה", "ראש השנה", "ר\"ה", "ר״ה",
+        "ערב יום כיפור", "יום כיפור",
+        "ערב סוכות", "סוכות", "חול המועד סוכות", "שמחת תורה",
+        "ערב פסח", "פסח", "חול המועד פסח", "שביעי של פסח",
+        "פורים", "שושן פורים", "תענית אסתר",
+        "ערב שבועות", "שבועות",
+        "יום העצמאות", "יום הזיכרון", "חנוכה", "ל״ג בעומר",
+        "חג", "חופשה", "מחלה", "מילואים", "רגיל",
+    ]
 
     def parse(self, raw_text: str) -> AttendanceReport:
         cleaned_text = self.clean_ocr_text(raw_text)
@@ -449,6 +479,15 @@ class TypeBParser(BaseParser):
             if note in line:
                 row.notes = note
                 break
+
+        # שורת חג ללא שעות עבודה (הערת חג בלבד ללא שעות כניסה ויציאה)
+        is_holiday = row.notes and row.notes not in ["חופשה", "מחלה", "מילואים", "רגיל"]
+        if is_holiday and len(times) == 0:
+            row.entry_time = None
+            row.exit_time = None
+            row.total_hours = 0.0
+            row.hours_100 = 0.0
+            return row
 
         floats = self.extract_floats(line)
         daily_hours = [f for f in floats if 0.5 <= f <= 24.0]

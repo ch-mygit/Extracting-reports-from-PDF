@@ -1,0 +1,523 @@
+<!DOCTYPE html>
+<html dir="rtl" lang="he">
+<head>
+    <meta charset="UTF-8">
+    <title>כרטיס עובד לחודש</title>
+    <style>
+        @page {
+            size: A4 portrait;
+            margin: 15mm 20mm;
+        }
+
+        body {
+            font-family: Arial, "Segoe UI", Tahoma, sans-serif;
+            color: #000000;
+            background-color: #ffffff;
+            margin: 0;
+            padding: 0;
+            line-height: 1.25;
+            font-size: 11pt;
+            direction: rtl;
+        }
+
+       
+        .report-wrapper {
+            width: 520px;
+            margin: 0 auto;
+        }
+
+
+        .top-section {
+            width: 320px;
+            margin: 0 auto 12px auto;
+        }
+
+        .employee-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11pt;
+            margin-bottom: 0px;
+        }
+
+        .employee-table td {
+            border: 1.5px solid #000000;
+            padding: 3px 8px;
+            font-weight: bold;
+        }
+
+        .employee-table .label-cell {
+            background-color: #ffffff;
+            text-align: right;
+            width: 40%;
+            border-left: none;
+        }
+
+        .employee-table .name-cell {
+            background-color: #ffffff;
+            text-align: center;
+            width: 60%;
+            border-right: none;
+        }
+
+   
+        .summary-top-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 11pt;
+            margin-top: -1.5px;
+        }
+
+        .summary-top-table td {
+            border: 1.5px solid #000000;
+            padding: 3px 8px;
+            font-weight: bold;
+        }
+
+        .summary-top-table td.label-col {
+            text-align: right;
+            width: 58%;
+            background-color: #ffffff;
+        }
+
+        .summary-top-table td.value-col {
+            text-align: center;
+            width: 42%;
+            background-color: #ffffff;
+        }
+
+        .banner-month {
+            width: 100%;
+            background-color: #bfbfbf;
+            border: 1.5px solid #000000;
+            font-size: 12pt;
+            font-weight: bold;
+            text-align: center;
+            padding: 4px 0;
+            box-sizing: border-box;
+            letter-spacing: 0.5px;
+        }
+
+    
+        table.type-b-table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: center;
+            font-size: 11pt;
+            margin-top: -1.5px;
+        }
+
+        table.type-b-table th {
+            border: 1.5px solid #000000;
+            padding: 4px 2px;
+            font-weight: bold;
+            background-color: #ffffff;
+            line-height: 1.15;
+            vertical-align: middle;
+        }
+
+        table.type-b-table td {
+            border: 1.5px solid #000000;
+            padding: 4px 2px;
+            height: 22px;
+            vertical-align: middle;
+        }
+
+        table.type-b-table tr.shabbat-row {
+            background-color: #bfbfbf;
+            font-weight: bold;
+        }
+
+        table.type-b-table tr.holiday-row {
+            background-color: #ffffff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="report-wrapper">
+
+  
+    <div class="top-section">
+        <table class="employee-table">
+            <tr>
+                <td class="label-cell">שם העובד:</td>
+                <td class="name-cell">יצחק לוי</td>
+            </tr>
+        </table>
+
+      
+        <table class="summary-top-table">
+            <tr>
+                <td class="label-col">סה"כ ימי עבודה לחודש</td>
+                <td class="value-col">20</td>
+            </tr>
+            <tr>
+                <td class="label-col">סה"כ שעות חודשיות</td>
+                <td class="value-col">165.00</td>
+            </tr>
+            <tr>
+                <td class="label-col">מחיר לשעה</td>
+                <td class="value-col">₪ 35.00</td>
+            </tr>
+            <tr>
+                <td class="label-col">סה"כ לתשלום</td>
+                <td class="value-col">₪ 5,775.00</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="banner-month">
+        כרטיס עובד לחודש: אפר-23
+    </div>
+
+    
+    <table class="type-b-table">
+        <thead>
+            <tr>
+                <th style="width: 17%;">תאריך</th>
+                <th style="width: 15%;">יום<br>בשבוע</th>
+                <th style="width: 16%;">שעת<br>כניסה</th>
+                <th style="width: 16%;">שעת יציאה</th>
+                <th style="width: 16%;">סה"כ<br>שעות</th>
+                <th style="width: 20%;">הערות</th>
+            </tr>
+        </thead>
+        <tbody>
+            
+            
+            <tr class="shabbat-row">
+                <td>1/4/23</td>
+                <td>שבת</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>2/4/23</td>
+                <td>ראשון</td>
+                <td>07:00</td>
+                <td>15:00</td>
+                <td>8.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>3/4/23</td>
+                <td>שני</td>
+                <td>07:30</td>
+                <td>15:30</td>
+                <td>8.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>4/4/23</td>
+                <td>שלישי</td>
+                <td>07:45</td>
+                <td>16:45</td>
+                <td>9.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>5/4/23</td>
+                <td>רביעי</td>
+                <td>08:00</td>
+                <td>15:30</td>
+                <td>7.50</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>6/4/23</td>
+                <td>חמישי</td>
+                <td>07:30</td>
+                <td>15:30</td>
+                <td>8.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="holiday-row">
+                <td>7/4/23</td>
+                <td>שישי</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>יום שישי</td>
+            </tr>
+            
+            
+            
+            <tr class="shabbat-row">
+                <td>8/4/23</td>
+                <td>שבת</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>9/4/23</td>
+                <td>ראשון</td>
+                <td>08:00</td>
+                <td>16:30</td>
+                <td>8.50</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>10/4/23</td>
+                <td>שני</td>
+                <td>07:30</td>
+                <td>16:30</td>
+                <td>9.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>11/4/23</td>
+                <td>שלישי</td>
+                <td>07:45</td>
+                <td>15:45</td>
+                <td>8.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>12/4/23</td>
+                <td>רביעי</td>
+                <td>08:45</td>
+                <td>17:15</td>
+                <td>8.50</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>13/4/23</td>
+                <td>חמישי</td>
+                <td>08:30</td>
+                <td>17:30</td>
+                <td>9.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="holiday-row">
+                <td>14/4/23</td>
+                <td>שישי</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>יום שישי</td>
+            </tr>
+            
+            
+            
+            <tr class="shabbat-row">
+                <td>15/4/23</td>
+                <td>שבת</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="holiday-row">
+                <td>16/4/23</td>
+                <td>ראשון</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>חול המועד פסח</td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>17/4/23</td>
+                <td>שני</td>
+                <td>07:15</td>
+                <td>16:15</td>
+                <td>9.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>18/4/23</td>
+                <td>שלישי</td>
+                <td>07:30</td>
+                <td>16:30</td>
+                <td>9.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>19/4/23</td>
+                <td>רביעי</td>
+                <td>08:45</td>
+                <td>15:45</td>
+                <td>7.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>20/4/23</td>
+                <td>חמישי</td>
+                <td>07:15</td>
+                <td>14:45</td>
+                <td>7.50</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="holiday-row">
+                <td>21/4/23</td>
+                <td>שישי</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>יום שישי</td>
+            </tr>
+            
+            
+            
+            <tr class="shabbat-row">
+                <td>22/4/23</td>
+                <td>שבת</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>23/4/23</td>
+                <td>ראשון</td>
+                <td>08:45</td>
+                <td>16:45</td>
+                <td>8.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>24/4/23</td>
+                <td>שני</td>
+                <td>07:00</td>
+                <td>14:30</td>
+                <td>7.50</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>25/4/23</td>
+                <td>שלישי</td>
+                <td>07:45</td>
+                <td>16:15</td>
+                <td>8.50</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>26/4/23</td>
+                <td>רביעי</td>
+                <td>08:15</td>
+                <td>16:15</td>
+                <td>8.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>27/4/23</td>
+                <td>חמישי</td>
+                <td>08:30</td>
+                <td>17:00</td>
+                <td>8.50</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="holiday-row">
+                <td>28/4/23</td>
+                <td>שישי</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>יום שישי</td>
+            </tr>
+            
+            
+            
+            <tr class="shabbat-row">
+                <td>29/4/23</td>
+                <td>שבת</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>30/4/23</td>
+                <td>ראשון</td>
+                <td>08:45</td>
+                <td>17:15</td>
+                <td>8.50</td>
+                <td></td>
+            </tr>
+            
+            
+        </tbody>
+    </table>
+
+</div>
+
+</body>
+</html>

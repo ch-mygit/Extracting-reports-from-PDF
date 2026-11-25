@@ -18,6 +18,8 @@ from .ocr import (
     ReportType,
 )
 from .generation import PDFBuilder
+from .generation.generator import SyntheticReportGenerator
+from .utils import TerminalUI
 
 __all__ = [
     "AttendanceReport",
@@ -35,4 +37,6 @@ __all__ = [
     "classify_report_detailed",
     "ReportType",
     "PDFBuilder",
+    "SyntheticReportGenerator",
+    "TerminalUI",
 ]

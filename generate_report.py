@@ -10,6 +10,7 @@ for p in [root_dir, src_dir]:
         sys.path.insert(0, str(p))
 
 from src.generation.generator import SyntheticReportGenerator
+from src.utils import TerminalUI
 
 
 def main():
@@ -84,12 +85,10 @@ def main():
         output_file = Path(args.output)
         output_file.parent.mkdir(parents=True, exist_ok=True)
 
-    print("=" * 60)
-    print(f"✨ מייצר דוח נוכחות חדש מאפס בפורמט {rep_type}")
-    print(f"   * שם עובד: {args.name} (ת.ז. {args.id})")
-    print(f"   * חודש/שנה: {args.month:02d}/{args.year}")
-    print(f"   * יעד פלט: {output_file.resolve()}")
-    print("=" * 60)
+    TerminalUI.banner(
+        title=f"מחולל דוחות נוכחות חדשים: פורמט {rep_type}",
+        subtitle=f"עובד: {args.name} ({args.id}) | חודש: {args.month:02d}/{args.year}",
+    )
 
     generator = SyntheticReportGenerator()
     created_path = generator.create_pdf(
@@ -104,10 +103,8 @@ def main():
         hourly_rate=args.rate,
     )
 
-    print("\n✅ קובץ ה-PDF החדש נוצר בהצלחה רבה!")
-    print(f"👉 מיקום הקובץ: {created_path.resolve()}")
-    print("\nלצפייה מיידית בקובץ הרץ:")
-    print(f'Start-Process "{created_path}"')
+    TerminalUI.file_box(created_path, label=f"קובץ PDF חדש שנוצר (פורמט {rep_type})")
+    TerminalUI.success(f"קובץ ה-PDF החדש בפורמט {rep_type} נוצר בהצלחה רבה!")
 
 
 if __name__ == "__main__":

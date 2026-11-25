@@ -34,12 +34,13 @@ class TypeATransformationStrategy(BaseTransformationStrategy):
     
     עקרונות המימוש:
     1. דטרמיניזם מלא: אתחול random.seed על בסיס נתוני הדוח המקורי (SHA-256 יציב).
-    2. צמצום כמות השורות לגודל יעד (ברירת מחדל: 5 שורות).
+    2. צמצום כמות השורות לגודל רנדומלי (או גודל יעד מוגדר).
     3. יצירת זמני כניסה ויציאה חדשים עם ערובה לוגית: exit_time > entry_time.
     4. חישוב מתמטי מדויק מאפס של שעות בסיס (100%), שעות נוספות (125%, 150%), שבת וסיכומים חודשיים.
+    5. הפרדה מוחלטת בין שעות 150% (ביום חול) לשעות שבת (נספרות בנפרד, ובסה"כ שעות שתיהן נסכמות יחד).
     """
 
-    def __init__(self, target_row_count: int = 5):
+    def __init__(self, target_row_count: Optional[int] = None):
         self.target_row_count = target_row_count
 
     def _generate_seed(self, report: AttendanceReport) -> int:
@@ -68,6 +69,14 @@ class TypeATransformationStrategy(BaseTransformationStrategy):
         seed_val = self._generate_seed(report)
         rng = random.Random(seed_val)
 
+        # קביעת כמות שורות: אם לא הוגדרה במפורש, נבחרת כמות רנדומלית יציבה
+        target_count = self.target_row_count
+        if target_count is None:
+            n_rows = len(transformed.rows)
+            min_r = min(4, n_rows)
+            max_r = min(n_rows, 16)
+            target_count = rng.randint(min_r, max_r) if min_r < max_r else n_rows
+
         shabbat_indices = [i for i, r in enumerate(transformed.rows) if r.day_of_week == "שבת" or (r.shabbat_hours and r.shabbat_hours > 0)]
         weekday_indices = [i for i, r in enumerate(transformed.rows) if i not in shabbat_indices]
 
@@ -75,7 +84,7 @@ class TypeATransformationStrategy(BaseTransformationStrategy):
         if shabbat_indices:
             chosen.append(rng.choice(shabbat_indices))
 
-        needed = min(self.target_row_count, len(transformed.rows)) - len(chosen)
+        needed = min(target_count, len(transformed.rows)) - len(chosen)
         if weekday_indices and needed > 0:
             chosen.extend(rng.sample(weekday_indices, k=min(needed, len(weekday_indices))))
 
@@ -101,6 +110,7 @@ class TypeATransformationStrategy(BaseTransformationStrategy):
     def _update_row_times_and_hours(self, row: AttendanceRow, rng: random.Random):
         """
         משנה את שעות הכניסה והיציאה של שורה בודדת ומחשבת את כל עמודות השעות מאפס.
+        מפרידה באופן מוחלט בין שעות 150% (בימי חול מעל 10 שעות) לבין שעות שבת.
         """
         entry_hour = rng.choice([7, 8, 9])
         entry_minute = rng.choice([0, 15, 30, 45])
@@ -108,33 +118,26 @@ class TypeATransformationStrategy(BaseTransformationStrategy):
             entry_minute = 30
         row.entry_time = time(hour=entry_hour, minute=entry_minute)
 
-        shift_duration_hours = rng.choice([6.5, 7.0, 8.5, 9.0, 9.5, 10.5])
-        duration_minutes = int(shift_duration_hours * 60)
-
-        entry_total_minutes = entry_hour * 60 + entry_minute
-        exit_total_minutes = entry_total_minutes + duration_minutes
-
-        exit_hour = exit_total_minutes // 60
-        exit_minute = exit_total_minutes % 60
-        row.exit_time = time(hour=exit_hour, minute=exit_minute)
-
-        if shift_duration_hours >= 6.0:
-            row.break_time = timedelta(minutes=30)
-            break_hours = 0.5
-        else:
-            row.break_time = timedelta(minutes=0)
-            break_hours = 0.0
-
-        net_hours = round(shift_duration_hours - break_hours, 2)
-        row.total_hours = net_hours
-
         if row.day_of_week == "שבת":
+            # בשבת: שעות שבת נספרות בנפרד (0 שעות 150%)
+            shift_duration_hours = rng.choice([6.0, 6.5, 7.0, 8.0])
+            break_hours = 0.5 if shift_duration_hours >= 6.0 else 0.0
+            row.break_time = timedelta(minutes=30) if break_hours > 0 else timedelta(0)
+            net_hours = round(shift_duration_hours - break_hours, 2)
+            row.total_hours = net_hours
             row.hours_100 = 0.0
             row.hours_125 = 0.0
-            row.hours_150 = 0.0
+            row.hours_150 = 0.0  # שעות 150% מתאפסות - שבת נספרת בעמודת שבת בלבד!
             row.shabbat_hours = net_hours
         else:
-            row.shabbat_hours = 0.0
+            # ביום חול: שעות שבת הן תמיד 0.0. שעות 150% הן שעות מעל 10 שעות
+            shift_duration_hours = rng.choice([6.5, 7.0, 8.5, 9.0, 9.5, 10.5, 11.5, 12.0, 13.0])
+            break_hours = 0.5 if shift_duration_hours >= 6.0 else 0.0
+            row.break_time = timedelta(minutes=30) if break_hours > 0 else timedelta(0)
+            net_hours = round(shift_duration_hours - break_hours, 2)
+            row.total_hours = net_hours
+            row.shabbat_hours = 0.0  # לא שבת!
+
             if net_hours <= 8.0:
                 row.hours_100 = net_hours
                 row.hours_125 = 0.0
@@ -148,8 +151,15 @@ class TypeATransformationStrategy(BaseTransformationStrategy):
                 row.hours_125 = 2.0
                 row.hours_150 = round(net_hours - 10.0, 2)
 
+        duration_minutes = int(shift_duration_hours * 60)
+        entry_total_minutes = entry_hour * 60 + entry_minute
+        exit_total_minutes = entry_total_minutes + duration_minutes
+        exit_hour = (exit_total_minutes // 60) % 24
+        exit_minute = exit_total_minutes % 60
+        row.exit_time = time(hour=exit_hour, minute=exit_minute)
 
-def transform_type_a_report(report: AttendanceReport, target_row_count: int = 5) -> AttendanceReport:
+
+def transform_type_a_report(report: AttendanceReport, target_row_count: Optional[int] = None) -> AttendanceReport:
     strategy = TypeATransformationStrategy(target_row_count=target_row_count)
     return strategy.transform(report)
 
@@ -170,7 +180,7 @@ def test_deterministic_behavior():
                 exit_time=time(15, 0),
                 break_time=timedelta(minutes=30),
                 hours_100=0.0 if is_shabbat else 6.5,
-                hours_150=6.5 if is_shabbat else 0.0,
+                hours_150=0.0,
                 shabbat_hours=6.5 if is_shabbat else 0.0,
                 total_hours=6.5,
                 location="גליליון",
@@ -183,6 +193,7 @@ def test_deterministic_behavior():
         rows=test_rows,
         total_hours=130.0,
         total_hours_100=110.5,
+        total_hours_150=0.0,
         total_shabbat_hours=19.5,
         total_work_days=20,
     )
@@ -213,7 +224,82 @@ def test_deterministic_behavior():
     print("============================================================")
 
 
-run_unit_tests = test_deterministic_behavior
+def test_separation_of_150_and_shabbat():
+    """
+    בדיקה ייעודית המוודאת הפרדה מוחלטת בין שעות 150% לשעות שבת:
+    אם יש 3 שעות 150% ו-3 שעות שבת, בסה"כ שעות כתוב 6,
+    וכל אחד מהם נספר בנפרד (hours_150=3, shabbat_hours=3).
+    """
+    row_weekday = AttendanceRow(
+        date=date(2022, 10, 2),
+        day_of_week="ראשון",
+        entry_time=time(8, 0),
+        exit_time=time(21, 30),
+        break_time=timedelta(minutes=30),
+        hours_100=8.0,
+        hours_125=2.0,
+        hours_150=3.0,
+        shabbat_hours=0.0,
+        total_hours=13.0,
+    )
+    row_shabbat = AttendanceRow(
+        date=date(2022, 10, 8),
+        day_of_week="שבת",
+        entry_time=time(8, 0),
+        exit_time=time(11, 0),
+        break_time=timedelta(minutes=0),
+        hours_100=0.0,
+        hours_125=0.0,
+        hours_150=0.0,
+        shabbat_hours=3.0,
+        total_hours=3.0,
+    )
+
+    report = AttendanceReport(
+        company_name='נ.ע. הנשר כח אדם בע"מ',
+        rows=[row_weekday, row_shabbat],
+        total_hours=16.0,
+        total_hours_100=8.0,
+        total_hours_125=2.0,
+        total_hours_150=3.0,
+        total_shabbat_hours=3.0,
+        total_work_days=2,
+    )
+
+    # 1. בשורות הבודדות: שעות 150% ושעות שבת אינן מתערבבות
+    assert row_weekday.hours_150 == 3.0
+    assert row_weekday.shabbat_hours == 0.0
+    assert row_shabbat.hours_150 == 0.0
+    assert row_shabbat.shabbat_hours == 3.0
+
+    # 2. בסיכומים: נספרים בנפרד, וסכומם המשותף בסה"כ הוא 6 שעות
+    assert report.total_hours_150 == 3.0
+    assert report.total_shabbat_hours == 3.0
+    assert (report.total_hours_150 + report.total_shabbat_hours) == 6.0
+
+    # 3. בדיקת טרנספורמציה כאשר לא מגדירים target_row_count (כמות רנדומלית)
+    transformed_random = transform_type_a_report(report)
+    assert 1 <= len(transformed_random.rows) <= 2
+    assert transformed_random.total_hours == round(
+        transformed_random.total_hours_100
+        + transformed_random.total_hours_125
+        + transformed_random.total_hours_150
+        + (transformed_random.total_shabbat_hours or 0.0),
+        2
+    )
+
+    print("============================================================")
+    print("✅ Unit Test: הפרדת שעות 150% ושעות שבת עברה בהצלחה מלאה!")
+    print("  - שעות 150%: 3.00 נספרו בנפרד")
+    print("  - שעות שבת: 3.00 נספרו בנפרד")
+    print("  - סה\"כ יחד נסכמים ל-6.00 שעות")
+    print("============================================================")
+
+
+def run_unit_tests():
+    test_deterministic_behavior()
+    test_separation_of_150_and_shabbat()
+
 
 if __name__ == "__main__":
-    test_deterministic_behavior()
+    run_unit_tests()

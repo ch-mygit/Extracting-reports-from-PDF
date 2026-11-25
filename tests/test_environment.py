@@ -94,6 +94,11 @@ def check_tesseract():
         return False
 
 
+def test_python_packages_environment():
+    """מוודא שכל חבילות הפייתון הנדרשות מותקנות."""
+    assert check_python_packages() is True
+
+
 def main():
     print("=== בדיקת סביבה למערכת הדוחות ===")
     ok_pkgs = check_python_packages()

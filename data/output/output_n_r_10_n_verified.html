@@ -20,19 +20,18 @@
             direction: rtl;
         }
 
-        /* מכלול מרכזי התואם בדיוק את מבנה הדוח המקורי של סוג B */
+       
         .report-wrapper {
             width: 520px;
             margin: 0 auto;
         }
 
-        /* בלוק סיכומים עליון של סוג B */
+
         .top-section {
             width: 320px;
             margin: 0 auto 12px auto;
         }
 
-        /* קופסת שם העובד */
         .employee-table {
             width: 100%;
             border-collapse: collapse;
@@ -60,7 +59,7 @@
             border-right: none;
         }
 
-        /* טבלת סיכומים עליונה (4 שורות) */
+   
         .summary-top-table {
             width: 100%;
             border-collapse: collapse;
@@ -86,7 +85,6 @@
             background-color: #ffffff;
         }
 
-        /* באנר כותרת: כרטיס עובד לחודש (באנר אפור על כל רוחב הטבלה) */
         .banner-month {
             width: 100%;
             background-color: #bfbfbf;
@@ -99,7 +97,7 @@
             letter-spacing: 0.5px;
         }
 
-        /* טבלת נוכחות מרכזית לסוג B (6 עמודות) */
+    
         table.type-b-table {
             width: 100%;
             border-collapse: collapse;
@@ -124,7 +122,6 @@
             vertical-align: middle;
         }
 
-        /* שורת שבת - אפור מלא בדיוק כמו בסריקה המקורית */
         table.type-b-table tr.shabbat-row {
             background-color: #bfbfbf;
             font-weight: bold;
@@ -139,9 +136,8 @@
 
 <div class="report-wrapper">
 
-    <!-- בלוק עליון: שם העובד וטבלת 4 הסיכומים -->
+  
     <div class="top-section">
-        <!-- קופסת שם העובד -->
         <table class="employee-table">
             <tr>
                 <td class="label-cell">שם העובד:</td>
@@ -149,15 +145,15 @@
             </tr>
         </table>
 
-        <!-- טבלת 4 הסיכומים העליונים -->
+      
         <table class="summary-top-table">
             <tr>
                 <td class="label-col">סה"כ ימי עבודה לחודש</td>
-                <td class="value-col">4</td>
+                <td class="value-col">8</td>
             </tr>
             <tr>
                 <td class="label-col">סה"כ שעות חודשיות</td>
-                <td class="value-col">14.25</td>
+                <td class="value-col">28.00</td>
             </tr>
             <tr>
                 <td class="label-col">מחיר לשעה</td>
@@ -165,17 +161,16 @@
             </tr>
             <tr>
                 <td class="label-col">סה"כ לתשלום</td>
-                <td class="value-col">₪ 436.76</td>
+                <td class="value-col">₪ 858.20</td>
             </tr>
         </table>
     </div>
 
-    <!-- באנר כותרת אפור: כרטיס עובד לחודש: ספט-22 -->
     <div class="banner-month">
         כרטיס עובד לחודש: ינו-23
     </div>
 
-    <!-- טבלת נוכחות מרכזית (6 עמודות) -->
+    
     <table class="type-b-table">
         <thead>
             <tr>
@@ -193,9 +188,9 @@
             <tr class="">
                 <td>2/1/23</td>
                 <td>שני</td>
-                <td>09:00</td>
-                <td>12:30</td>
-                <td>3.50</td>
+                <td>08:05</td>
+                <td>12:05</td>
+                <td>4.00</td>
                 <td></td>
             </tr>
             
@@ -213,12 +208,45 @@
             
             
             <tr class="">
+                <td>9/1/23</td>
+                <td>שני</td>
+                <td>08:10</td>
+                <td>11:25</td>
+                <td>3.25</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>10/1/23</td>
+                <td>שלישי</td>
+                <td>08:15</td>
+                <td>11:15</td>
+                <td>3.00</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
                 <td>11/1/23</td>
                 <td>רביעי</td>
-                <td>09:10</td>
-                <td>12:40</td>
+                <td>09:00</td>
+                <td>12:30</td>
                 <td>3.50</td>
                 <td></td>
+            </tr>
+            
+            
+            
+            <tr class="holiday-row">
+                <td>15/1/23</td>
+                <td>ראשון</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>חנוכה</td>
             </tr>
             
             
@@ -226,6 +254,28 @@
             <tr class="">
                 <td>18/1/23</td>
                 <td>רביעי</td>
+                <td>08:10</td>
+                <td>11:25</td>
+                <td>3.25</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>29/1/23</td>
+                <td>ראשון</td>
+                <td>08:00</td>
+                <td>11:15</td>
+                <td>3.25</td>
+                <td></td>
+            </tr>
+            
+            
+            
+            <tr class="">
+                <td>30/1/23</td>
+                <td>שני</td>
                 <td>08:05</td>
                 <td>12:05</td>
                 <td>4.00</td>
@@ -235,11 +285,11 @@
             
             
             <tr class="">
-                <td>22/1/23</td>
-                <td>ראשון</td>
-                <td>08:10</td>
-                <td>11:25</td>
-                <td>3.25</td>
+                <td>19/4/23</td>
+                <td>רביעי</td>
+                <td>09:05</td>
+                <td>12:50</td>
+                <td>3.75</td>
                 <td></td>
             </tr>
             
